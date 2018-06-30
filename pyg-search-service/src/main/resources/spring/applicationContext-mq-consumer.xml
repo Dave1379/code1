@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd 
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<!-- 把active交给spring管理 -->
+
+	<bean id="targetConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<constructor-arg value="tcp://192.168.66.66:61616"></constructor-arg>
+	</bean>
+
+	<!-- spring 提供jms服务工厂管理activeMQ -->
+	<bean id="connectionFactory"
+		class="org.springframework.jms.connection.SingleConnectionFactory">
+		<property name="targetConnectionFactory" ref="targetConnectionFactory"></property>
+	</bean>
+
+
+	<!-- 指定消息存储空间，点对点，发布订阅 -->
+	<bean id="one" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg value="oneQueue"></constructor-arg>
+	</bean>
+	
+	
+	<!-- 同步索引库，静态页面使用消息空间 -->
+	<bean id="shtopic" class="org.apache.activemq.command.ActiveMQTopic">
+		<constructor-arg value="solr_html_topic"></constructor-arg>
+	</bean>
+
+	
+
+	<!-- 自定义监听器：被监听容器触发，自动接收消息 -->
+	<bean id="myMessageListener" class="com.pyg.search.service.listener.SolrIndexListener"></bean>
+
+	<!--spring jms提供监听容器：自动触发接收消息监听器，实现自动接收消息 -->
+	<bean
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<!-- 指定从哪个服务器接收消息 -->
+		<property name="connectionFactory" ref="connectionFactory"></property>
+		<!--从服务器中那个空间接收消息 -->
+		<property name="destination" ref="shtopic"></property>
+		<!--指定具体接收消息监听器 -->
+		<property name="messageListener" ref="myMessageListener"></property>
+	</bean>
+
+</beans>

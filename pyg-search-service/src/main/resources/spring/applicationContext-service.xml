@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+	
+	
+	<!-- spring整合dubbo把service对象注册到zookeeper注册中心 -->
+	
+	<!-- 定义服务名称: 自定义,唯一标识一个服务,以便于进行服务治理 -->
+	<dubbo:application name="search-service" />
+	
+	<!-- 服务注册地址: multicast : 广播地址 zookeeper: zookeeper注册中心地址 -->
+	<dubbo:registry address="zookeeper://192.168.66.66:2181" />
+	
+	<!-- 对外暴露服务地址端口 地址:dubbo://ip:20880/接口/方法/.. -->
+	<dubbo:protocol name="dubbo" port="20882" />
+	
+	<!-- 把对象注册到zookeeper注册中心 : dubbox -->
+	<dubbo:annotation package="com.pyg.search.service.impl" />
+</beans>
